@@ -143,19 +143,80 @@
   .fid-overlay.done .scan { display: none; }
   .fid-overlay.done .ok { display: block; }
 
-  /* Screen 3: blank in the Figma file */
-  .s3 { background: #fff; color: #192e54; }
-  .s3 .empty {
-    position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 10px; padding: 0 40px;
+  /* Screen 3: Home (designed to match frames 1-2) */
+  .s3 .scroll {
+    position: absolute; inset: 0; overflow-y: auto; padding: 62px 20px 110px;
+    scrollbar-width: none;
   }
-  .s3 .empty strong { font-size: 18px; }
-  .s3 .empty span { font-size: 13px; color: #6b7280; }
-  .s3 .empty button {
-    margin-top: 12px; justify-self: center; padding: 10px 20px; border-radius: 999px;
-    background: #192e54; color: #fff; font-size: 13px;
+  .s3 .scroll::-webkit-scrollbar { display: none; }
+  .glass {
+    background: var(--pill); border: 1px solid rgba(255,255,255,.08);
+    backdrop-filter: blur(24px) saturate(140%); -webkit-backdrop-filter: blur(24px) saturate(140%);
   }
-  .s3 .status { color: #000; }
-  .s3 .home-ind { background: rgba(0,0,0,.8); }
+  .h-top { display: flex; align-items: center; justify-content: space-between; height: 52px; }
+  .h-top .who { display: flex; align-items: center; gap: 12px; }
+  .h-top .logo { width: 34px; height: 34px; }
+  .h-top small { display: block; font-size: 11px; color: var(--muted); font-weight: 500; }
+  .h-top b { font-size: 17px; font-weight: 700; }
+  .h-top .acts { display: flex; gap: 8px; }
+  .icon-btn { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; position: relative; }
+  .icon-btn .dot { position: absolute; top: 9px; right: 10px; width: 8px; height: 8px; border-radius: 50%; background: #ffd200; border: 1.5px solid #1f2a40; }
+  .avatar { font-size: 13px; font-weight: 700; background: rgba(255,255,255,.84); color: var(--navy); }
+
+  .balance { margin-top: 18px; border-radius: 32px; padding: 22px 24px 20px; }
+  .balance .row { display: flex; align-items: center; justify-content: space-between; }
+  .balance .lbl { font-size: 13px; font-weight: 500; color: var(--muted); }
+  .balance .amt { font-size: 34px; font-weight: 700; letter-spacing: -.5px; margin-top: 6px; transition: filter .2s; }
+  .balance .amt span { font-size: 20px; opacity: .7; }
+  .balance .delta { margin-top: 8px; font-size: 12px; font-weight: 500; color: var(--success); }
+  .masked .balance .amt, .masked .acct .money { filter: blur(9px); }
+  .eye { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; color: var(--muted); }
+
+  .quick { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 20px; text-align: center; }
+  .quick button { display: grid; justify-items: center; gap: 8px; font-size: 11px; font-weight: 500; color: var(--muted); }
+  .quick .ico { width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; color: #fff; }
+  .quick button:first-child .ico { background: rgba(255,255,255,.84); color: var(--navy); }
+
+  .sec { display: flex; justify-content: space-between; align-items: baseline; margin: 28px 4px 12px; }
+  .sec h2 { font-size: 17px; font-weight: 700; }
+  .sec button { font-size: 12px; font-weight: 700; color: var(--muted); }
+
+  .accts { display: grid; gap: 10px; }
+  .acct { display: flex; align-items: center; gap: 14px; border-radius: 26px; padding: 14px 18px 14px 14px; width: 100%; text-align: left; }
+  .acct .badge { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; flex: none; background: rgba(255,255,255,.1); }
+  .acct .name { font-size: 14px; font-weight: 700; }
+  .acct .num { font-size: 11px; font-weight: 500; color: var(--muted); margin-top: 2px; }
+  .acct .money { margin-left: auto; text-align: right; font-size: 15px; font-weight: 700; transition: filter .2s; }
+  .acct .money small { display: block; font-size: 10px; font-weight: 500; color: var(--muted); }
+
+  .txns { border-radius: 28px; padding: 6px 18px; }
+  .txn { display: flex; align-items: center; gap: 14px; padding: 12px 0; }
+  .txn + .txn { border-top: 1px solid rgba(255,255,255,.07); }
+  .txn .badge { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; flex: none; background: rgba(255,255,255,.08); font-size: 13px; font-weight: 700; }
+  .txn .name { font-size: 13px; font-weight: 700; }
+  .txn .meta { font-size: 11px; color: var(--muted); font-weight: 500; margin-top: 2px; }
+  .txn .money { margin-left: auto; font-size: 13px; font-weight: 700; }
+  .txn .money.in { color: var(--success); }
+
+  .tabbar {
+    position: absolute; left: 16px; right: 16px; bottom: 26px; height: 68px; border-radius: 34px; z-index: 15;
+    display: grid; grid-template-columns: repeat(4, 1fr); padding: 6px;
+    background: rgba(30, 34, 44, .82);
+  }
+  .topfade {
+    position: absolute; top: 0; left: 0; right: 0; height: 58px; z-index: 18; pointer-events: none;
+    background: linear-gradient(rgba(24,30,44,.92) 60%, rgba(24,30,44,0));
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    mask-image: linear-gradient(#000 70%, transparent); -webkit-mask-image: linear-gradient(#000 70%, transparent);
+  }
+  .tabbar button { display: grid; justify-items: center; align-content: center; gap: 3px; font-size: 10px; font-weight: 500; color: #a9adb6; border-radius: 28px; }
+  .tabbar button.on { color: #fff; background: rgba(255,255,255,.12); }
+  .toast {
+    position: absolute; left: 50%; bottom: 108px; transform: translate(-50%, 10px); z-index: 25;
+    background: rgba(255,255,255,.92); color: var(--navy); font-size: 13px; font-weight: 700;
+    padding: 10px 18px; border-radius: 999px; opacity: 0; transition: .2s; pointer-events: none; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
   @media (max-width: 460px) {
     .wrap .phone { transform: scale(calc((100vw - 32px) / 422px)); margin-bottom: calc((874px) * ((100vw - 32px) / 422px - 1)); }
@@ -165,7 +226,7 @@
 <body>
 <header>
   <h1>RBC App Redesign · Mockup</h1>
-  <p>Built from <em>RBC_App_redesign.fig</em>. Tap through: Sign In → Face ID or Use Password → signed in.</p>
+  <p>Built from <em>RBC_App_redesign.fig</em>. Tap through: Sign In → Face ID or Use Password → Home. Tap the avatar on Home to sign out.</p>
   <div class="toolbar" role="tablist">
     <button class="active" data-view="all">All screens</button>
     <button data-view="single">Prototype</button>
@@ -242,19 +303,45 @@
     <div class="label">2 · Sign in</div>
   </section>
 
-  <!-- Screen 3: blank frame in the Figma file -->
+  <!-- Screen 3: Home (blank in the Figma file; designed to match frames 1-2) -->
   <section class="wrap" data-screen="3">
-    <div class="phone s3">
+    <div class="phone s3" id="home">
+      <div class="bg" style="opacity:.5"></div>
+      <div class="topfade"></div>
       <div class="island"></div>
       <div class="status"><span>9:41</span><span class="icons"><svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2.5" width="3" height="9.5" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg><svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.3c2.3 0 4.4.9 6 2.4l1.1-1.1A10 10 0 0 0 8 .7 10 10 0 0 0 .9 3.6L2 4.7a8.4 8.4 0 0 1 6-2.4Zm0 3.3c1.4 0 2.6.5 3.6 1.4l1.1-1.1A6.8 6.8 0 0 0 8 4a6.8 6.8 0 0 0-4.7 1.9L4.4 7c1-.9 2.2-1.4 3.6-1.4Zm0 3.3c.6 0 1.1.2 1.5.6L8 11 6.5 9.5c.4-.4.9-.6 1.5-.6Z"/></svg><svg width="27" height="13" viewBox="0 0 27 13" fill="none"><rect x=".5" y=".5" width="23" height="12" rx="3.5" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="20" height="9" rx="2" fill="currentColor"/><path d="M25 4.5v4a2 2 0 0 0 0-4Z" fill="currentColor" opacity=".4"/></svg></span></div>
-      <div class="empty">
-        <strong>Signed in</strong>
-        <span>This frame is empty in the Figma file. It's ready for the home / accounts screen.</span>
-        <button class="reset tap" data-go="1">Restart prototype</button>
+      <div class="scroll">
+        <div class="h-top">
+          <div class="who">
+            <div class="logo" role="img" aria-label="RBC logo"></div>
+            <div><small>Good morning</small><b>Alex</b></div>
+          </div>
+          <div class="acts">
+            <button class="reset icon-btn glass tap" data-toast="No new alerts" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot"></span></button>
+            <button class="reset icon-btn avatar tap" data-go="1" aria-label="Sign out" title="Sign out">AK</button>
+          </div>
+        </div>
+
+        <div class="balance glass">
+          <div class="row"><span class="lbl">Total balance</span>
+            <button class="reset eye" data-eye aria-label="Hide balances"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+          <div class="amt">$12,480<span>.52</span></div>
+          <div class="delta">▲ $1,240.18 this month</div>
+        </div>
+
+        <div class="quick"><button class="reset tap" data-toast="Send"><div class="ico glass"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></div>Send</button><button class="reset tap" data-toast="Pay bills"><div class="ico glass"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l3-2 3 2 2-2 2 2 3-2 3 2V2l-3 2-3-2-2 2-2-2-3 2Z"/><path d="M8 9h8M8 13h6"/></svg></div>Pay bills</button><button class="reset tap" data-toast="Transfer"><div class="ico glass"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4 3 8l4 4"/><path d="M3 8h14"/><path d="m17 20 4-4-4-4"/><path d="M21 16H7"/></svg></div>Transfer</button><button class="reset tap" data-toast="Deposit"><div class="ico glass"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M12 9v6M9 12l3 3 3-3"/></svg></div>Deposit</button></div>
+
+        <div class="sec"><h2>Accounts</h2><button class="reset" data-toast="All accounts">See all</button></div>
+        <div class="accts"><button class="reset acct glass tap" data-toast="Chequing details"><div class="badge"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg></div><div><div class="name">Chequing</div><div class="num">Day to Day Banking ••• 4821</div></div><div class="money">$3,214.87<small>Available</small></div></button><button class="reset acct glass tap" data-toast="Savings details"><div class="badge"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 9c-.6-2.9-3.6-5-7-5-4 0-7 2.7-7 6 0 1.8.9 3.4 2.3 4.5L7 19h3l.5-2h3l.5 2h3l-.2-3.3c1-.7 1.8-1.6 2.2-2.7H21V9Z"/><circle cx="15" cy="9.5" r=".5" fill="currentColor"/></svg></div><div><div class="name">Savings</div><div class="num">eSavings ••• 1093</div></div><div class="money">$9,950.00<small>Available</small></div></button><button class="reset acct glass tap" data-toast="Visa credit card details"><div class="badge"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg></div><div><div class="name">Visa credit card</div><div class="num">Avion ••• 7731</div></div><div class="money">$684.35<small>Balance owing</small></div></button></div>
+
+        <div class="sec"><h2>Recent transactions</h2><button class="reset" data-toast="Transaction history">See all</button></div>
+        <div class="txns glass"><div class="txn"><div class="badge">T</div><div><div class="name">Tim Hortons</div><div class="meta">Today · Visa</div></div><div class="money ">−$6.45</div></div><div class="txn"><div class="badge">P</div><div><div class="name">Payroll deposit</div><div class="meta">Yesterday · Chequing</div></div><div class="money in">+$2,350.00</div></div><div class="txn"><div class="badge">L</div><div><div class="name">Loblaws</div><div class="meta">Sep 30 · Chequing</div></div><div class="money ">−$84.17</div></div><div class="txn"><div class="badge">H</div><div><div class="name">Hydro One</div><div class="meta">Sep 29 · Bill payment</div></div><div class="money ">−$112.60</div></div><div class="txn"><div class="badge">U</div><div><div class="name">Uber</div><div class="meta">Sep 28 · Visa</div></div><div class="money ">−$18.92</div></div></div>
       </div>
+      <nav class="tabbar glass"><button class="reset on" data-tab><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z"/></svg>Home</button><button class="reset" data-tab><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Accounts</button><button class="reset" data-tab><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4 3 8l4 4"/><path d="M3 8h14"/><path d="m17 20 4-4-4-4"/><path d="M21 16H7"/></svg>Move Money</button><button class="reset" data-tab><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg>More</button></nav>
+      <div class="toast" id="toast"></div>
       <div class="home-ind"></div>
     </div>
-    <div class="label">3 · Home (placeholder)</div>
+    <div class="label">3 · Home</div>
   </section>
 </main>
 
@@ -295,6 +382,17 @@
   login.querySelector('[data-toggle-pw]').addEventListener('click', () => { login.classList.toggle('pw-mode'); updatePrimary(); });
   login.querySelector('[data-faceid]').addEventListener('click', faceId);
   login.querySelector('[data-primary]').addEventListener('click', () => login.classList.contains('pw-mode') ? go(3) : faceId());
+  const home = document.getElementById('home');
+  const toast = document.getElementById('toast');
+  let tt;
+  home.querySelectorAll('[data-toast]').forEach(b => b.addEventListener('click', () => {
+    toast.textContent = b.dataset.toast + ' (coming soon)';
+    toast.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => toast.classList.remove('show'), 1600);
+  }));
+  home.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => {
+    home.querySelectorAll('[data-tab]').forEach(x => x.classList.toggle('on', x === b));
+  }));
+  home.querySelector('[data-eye]').addEventListener('click', () => home.classList.toggle('masked'));
 </script>
 </body>
 </html>
