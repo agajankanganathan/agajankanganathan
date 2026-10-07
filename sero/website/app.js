@@ -157,8 +157,10 @@
 
   /* ---- Book a demo (Netlify Forms, submitted without leaving the page) ---- */
   var form=document.querySelector('.demo-form'),msg=form.querySelector('.form-msg');
+  var local=location.protocol==='file:'||/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
   form.addEventListener('submit',function(e){
     e.preventDefault();
+    if(local){msg.textContent='Local preview: the form is wired up, but submissions only work once the site is hosted on Netlify.';return}
     var btn=form.querySelector('button[type="submit"]');
     btn.disabled=true;msg.textContent='Sending…';
     fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(new FormData(form)).toString()})

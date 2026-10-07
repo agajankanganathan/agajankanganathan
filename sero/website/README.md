@@ -21,7 +21,7 @@ python3 -m http.server 8000   # then open http://localhost:8000
 
 Create a new Netlify site from this repo with **base directory `sero/website`** (no build command).
 The Book a Demo form uses Netlify Forms, so submissions show up under the site's **Forms** tab once
-form detection is enabled. Locally the form shows an error message, because there is no Netlify backend.
+form detection is enabled. Run locally, the form shows a "local preview" note instead of submitting.
 
 ## Still to do
 
