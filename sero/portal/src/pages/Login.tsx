@@ -38,13 +38,18 @@ export default function Login() {
         <h1>
           Find why your café customers leave and <em>win</em> them back.
         </h1>
+        <div className="login-points">
+          <div>✦ See exactly why guests stop coming back</div>
+          <div>🎁 Win them back with targeted offers and rewards</div>
+          <div>💬 Reply to every review in seconds</div>
+        </div>
         <p style={{ opacity: 0.75 }}>AI customer intelligence for independent cafés.</p>
       </section>
       <section className="login-form">
-        <form onSubmit={submit} noValidate>
+        <form className="glass" onSubmit={submit} noValidate>
           <div>
-            <h1 style={{ fontSize: 28 }}>Sign in</h1>
-            <p className="muted">to your café’s dashboard</p>
+            <h1 style={{ fontSize: 28 }}>Welcome back</h1>
+            <p className="muted">Sign in to your café’s dashboard</p>
           </div>
           <label className="field">
             Email
@@ -69,8 +74,8 @@ export default function Login() {
             Sign in
           </button>
           <div className="divider">or</div>
-          <button className="btn ghost" type="button" onClick={() => enter('Alex', 'alex@cornercafe.com')}>
-            Explore the demo café
+          <button className="btn accent" type="button" onClick={() => enter('Alex', 'alex@cornercafe.com')}>
+            Explore the demo café →
           </button>
           <p className="muted small">This is a demo. Any email and password will work, and no data leaves your browser.</p>
         </form>

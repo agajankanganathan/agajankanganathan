@@ -2,6 +2,7 @@ import { BrowserRouter, Link, Route, Routes } from 'react-router';
 
 import { Shell } from './components/Shell';
 import { ToastProvider } from './components/ui';
+import Help from './pages/Help';
 import Insights from './pages/Insights';
 import Login from './pages/Login';
 import Loyalty from './pages/Loyalty';
@@ -27,6 +28,7 @@ export default function App() {
               <Route path="menu" element={<Menu />} />
               <Route path="reviews" element={<Reviews />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="help" element={<Help />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
@@ -38,7 +40,7 @@ export default function App() {
 
 function NotFound() {
   return (
-    <div className="card stack">
+    <div className="card stack" style={{ justifyItems: 'start' }}>
       <h1>Page not found</h1>
       <p className="muted">That page doesn’t exist.</p>
       <Link className="btn" style={{ justifySelf: 'start' }} to="/">

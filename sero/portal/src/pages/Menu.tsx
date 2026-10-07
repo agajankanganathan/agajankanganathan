@@ -1,10 +1,13 @@
-import { useRef, useState, type FormEvent, type RefObject } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react';
+import { useSearchParams } from 'react-router';
 
 import { marginBand, marginPct, menuTip, money, parseMoney, weeklyProfit } from '@core/logic';
 import type { MenuItem } from '@core/types';
 
-import { PageHead, Switch, useToast } from '../components/ui';
+import { Icon } from '../components/icons';
+import { InfoTip, PageHead, Segmented, Stat, Switch, useToast } from '../components/ui';
 import { newId } from '../lib/ids';
+import { CATEGORIES, ITEM_CATEGORY, type Category } from '../lib/sample';
 import { useStore } from '../state/store';
 
 type SortKey = 'name' | 'price' | 'cost' | 'margin' | 'sold' | 'profit' | 'trend';
@@ -22,15 +25,35 @@ const SORTERS: Record<SortKey, (m: MenuItem) => number | string> = {
 export default function Menu() {
   const { state, dispatch } = useStore();
   const say = useToast();
+  const [params, setParams] = useSearchParams();
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: 'profit', dir: -1 });
+  const [cat, setCat] = useState<'all' | Category>('all');
+  const [q, setQ] = useState(params.get('q') ?? '');
   const dialog = useRef<HTMLDialogElement>(null);
   const tip = menuTip(state.menu);
+  const categoryOf = (m: MenuItem): Category => state.categories[m.id] ?? ITEM_CATEGORY[m.id] ?? 'Food';
 
-  const rows = [...state.menu].sort((a, b) => {
-    const x = SORTERS[sort.key](a);
-    const y = SORTERS[sort.key](b);
-    return (x < y ? -1 : x > y ? 1 : 0) * sort.dir;
-  });
+  // /menu?add=1 opens the add dialog; /menu?q=… pre-fills the search (from ⌘K).
+  useEffect(() => {
+    if (params.get('add')) dialog.current?.showModal();
+    if (params.get('add') || params.get('q')) setParams({}, { replace: true });
+  }, [params, setParams]);
+
+  const rows = state.menu
+    .filter((m) => cat === 'all' || categoryOf(m) === cat)
+    .filter((m) => m.name.toLowerCase().includes(q.trim().toLowerCase()))
+    .sort((a, b) => {
+      const x = SORTERS[sort.key](a);
+      const y = SORTERS[sort.key](b);
+      return (x < y ? -1 : x > y ? 1 : 0) * sort.dir;
+    });
+
+  const live = state.menu.filter((m) => m.available);
+  const revenue = live.reduce((t, m) => t + m.price * m.sold, 0);
+  const profit = live.reduce((t, m) => t + weeklyProfit(m), 0);
+  const blended = revenue ? (profit / revenue) * 100 : 0;
+  const low = live.filter((m) => marginBand(marginPct(m.price, m.cost)) === 'low');
+  const best = [...live].sort((a, b) => weeklyProfit(b) - weeklyProfit(a))[0];
 
   const th = (key: SortKey, label: string, right = true) => (
     <th className={right ? 'r' : ''} aria-sort={sort.key === key ? (sort.dir === 1 ? 'ascending' : 'descending') : 'none'}>
@@ -41,15 +64,24 @@ export default function Menu() {
     </th>
   );
 
-  const totalProfit = state.menu.filter((m) => m.available).reduce((t, m) => t + weeklyProfit(m), 0);
-
   return (
     <>
-      <PageHead title="Menu" sub="What sells, what earns, and what to change. Edit a price or cost and the margin updates.">
+      <PageHead crumb="Run" title="Menu" sub="What sells, what earns, and what to change. Edit a price or cost right in the table and the margin updates.">
         <button type="button" className="btn" onClick={() => dialog.current?.showModal()}>
           + Add item
         </button>
       </PageHead>
+
+      <div className="grid cols-4">
+        <Stat label="Gross profit this week" value={money(profit)} tip="Price minus cost to make, times units sold, for every item currently on the menu." />
+        <Stat
+          label="Average margin"
+          value={`${Math.round(blended)}%`}
+          tip="Your blended gross margin, weighted by sales. Cafés typically aim for 65–75% on drinks and 55%+ on food."
+        />
+        <Stat label="Top earner" value={best?.name ?? '–'} />
+        <Stat label="Needs a look" value={String(low.length)} tip="Items with a margin under 45%. Consider raising the price or reducing the recipe cost." />
+      </div>
 
       {tip ? (
         <section className="card ai row" style={{ alignItems: 'flex-start' }}>
@@ -58,12 +90,19 @@ export default function Menu() {
         </section>
       ) : null}
 
-      <section className="card">
-        <div className="card-head">
-          <h2>Items</h2>
-          <span className="muted small">
-            Gross profit this week: <b className="num">{money(totalProfit)}</b>
-          </span>
+      <section className="card" data-tour="menu-table">
+        <div className="card-head" style={{ flexWrap: 'wrap' }}>
+          <Segmented<'all' | Category>
+            label="Category"
+            value={cat}
+            onChange={setCat}
+            options={[{ key: 'all', label: 'All' }, ...CATEGORIES.map((c) => ({ key: c, label: c }))]}
+          />
+          <label className="search">
+            <Icon name="search" />
+            <span className="sr-only">Search menu</span>
+            <input className="input" placeholder="Search items…" value={q} onChange={(e) => setQ(e.target.value)} />
+          </label>
         </div>
         <div className="table-wrap">
           <table>
@@ -73,7 +112,7 @@ export default function Menu() {
                 {th('price', 'Price')}
                 {th('cost', 'Cost to make')}
                 {th('margin', 'Margin')}
-                {th('sold', 'Sold')}
+                {th('sold', 'Sold / wk')}
                 {th('profit', 'Profit / wk')}
                 {th('trend', 'Trend')}
                 <th className="r">On menu</th>
@@ -86,25 +125,27 @@ export default function Menu() {
                 return (
                   <tr key={m.id} className={m.available ? '' : 'off'}>
                     <td>
-                      <b>{m.name}</b>
+                      <div className="item-cell">
+                        <div>
+                          <b>{m.name}</b>
+                          <small>
+                            {categoryOf(m)}
+                            {m.available ? '' : ' · sold out'}
+                          </small>
+                        </div>
+                      </div>
                     </td>
                     <td className="r">
-                      <MoneyCell
-                        label={`${m.name} price`}
-                        value={m.price}
-                        onCommit={(price) => dispatch({ type: 'updateItem', id: m.id, price, cost: m.cost })}
-                      />
+                      <MoneyCell label={`${m.name} price`} value={m.price} onCommit={(price) => dispatch({ type: 'updateItem', id: m.id, price, cost: m.cost })} />
                     </td>
                     <td className="r">
-                      <MoneyCell
-                        label={`${m.name} cost`}
-                        value={m.cost}
-                        onCommit={(cost) => dispatch({ type: 'updateItem', id: m.id, price: m.price, cost })}
-                      />
+                      <MoneyCell label={`${m.name} cost`} value={m.cost} onCommit={(cost) => dispatch({ type: 'updateItem', id: m.id, price: m.price, cost })} />
                     </td>
                     <td className="r num">
-                      <span className={band === 'healthy' ? 'good' : band === 'low' ? 'bad' : ''} title={`(${money(m.price, true)} − ${money(m.cost, true)}) ÷ ${money(m.price, true)}`}>
-                        <b>{Math.round(pct)}%</b>
+                      <span
+                        className={`pill ${band === 'healthy' ? 'good' : band === 'low' ? 'bad' : 'neutral'}`}
+                        title={`(${money(m.price, true)} − ${money(m.cost, true)}) ÷ ${money(m.price, true)}`}>
+                        {Math.round(pct)}%
                       </span>
                     </td>
                     <td className="r num">{m.sold}</td>
@@ -125,13 +166,33 @@ export default function Menu() {
                   </tr>
                 );
               })}
+              {rows.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="empty">
+                    No items match.
+                  </td>
+                </tr>
+              ) : null}
             </tbody>
+            <tfoot>
+              <tr>
+                <td>On the menu ({live.length} items)</td>
+                <td />
+                <td />
+                <td className="r num">{Math.round(blended)}%</td>
+                <td className="r num">{live.reduce((t, m) => t + m.sold, 0)}</td>
+                <td className="r num">{money(profit)}</td>
+                <td />
+                <td />
+              </tr>
+            </tfoot>
           </table>
         </div>
       </section>
       <p className="muted small">
-        Margin = (price − cost to make) ÷ price. <span className="good">65%+ healthy</span> · 45–64% ok ·{' '}
-        <span className="bad">under 45% worth a look</span>.
+        Margin = (price − cost to make) ÷ price. <span className="good">65%+ healthy</span> · 45–64% ok · <span className="bad">under 45% worth a look</span>. Press Enter to save
+        an edit, Esc to undo it.
+        <InfoTip>“Cost to make” is ingredients plus packaging for one item. It usually doesn’t include staff time.</InfoTip>
       </p>
 
       <AddItem dialog={dialog} />
@@ -177,6 +238,7 @@ function AddItem({ dialog }: { dialog: RefObject<HTMLDialogElement | null> }) {
   const { dispatch } = useStore();
   const say = useToast();
   const [name, setName] = useState('');
+  const [category, setCategory] = useState<Category>('Coffee');
   const [price, setPrice] = useState('');
   const [cost, setCost] = useState('');
   const p = parseMoney(price);
@@ -196,6 +258,7 @@ function AddItem({ dialog }: { dialog: RefObject<HTMLDialogElement | null> }) {
     dispatch({
       type: 'addItem',
       item: { id: newId('item'), name: name.trim(), price: p, cost: c, sold: 0, trend: 0, available: true },
+      category,
     });
     say(`${name.trim()} added to the menu`);
     close();
@@ -207,29 +270,51 @@ function AddItem({ dialog }: { dialog: RefObject<HTMLDialogElement | null> }) {
         <h2 id="add-item-title" style={{ fontSize: 22 }}>
           Add a menu item
         </h2>
-        <label className="field">
-          Name
-          <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Chai Latte" required />
-        </label>
+        <div className="grid cols-2">
+          <label className="field">
+            Name
+            <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Chai Latte" required />
+          </label>
+          <label className="field">
+            Category
+            <select className="input" value={category} onChange={(e) => setCategory(e.target.value as Category)}>
+              {CATEGORIES.map((x) => (
+                <option key={x}>{x}</option>
+              ))}
+            </select>
+          </label>
+        </div>
         <div className="grid cols-2">
           <label className="field">
             Selling price
             <span className="money">
-              <input className="input" inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} />
+              <input className="input" inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="0.00" />
             </span>
           </label>
           <label className="field">
-            Cost to make
+            <span>
+              Cost to make <span className="hint">ingredients + packaging</span>
+            </span>
             <span className="money">
-              <input className="input" inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value)} />
+              <input className="input" inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value)} placeholder="0.00" />
             </span>
           </label>
         </div>
-        <p className="muted small" aria-live="polite">
-          {p > 0 && c >= 0
-            ? `Margin: ${Math.round(marginPct(p, c))}% · ${money(p - c, true)} profit per item`
-            : 'Enter a price and cost to see the margin.'}
-        </p>
+        <div className="card ai" style={{ padding: 14 }} aria-live="polite">
+          {p > 0 && c >= 0 ? (
+            <>
+              <span className="muted small">Margin</span>
+              <p style={{ fontSize: 24, fontWeight: 600 }} className={marginBand(marginPct(p, c)) === 'low' ? 'bad' : 'good'}>
+                {Math.round(marginPct(p, c))}%{' '}
+                <span className="muted" style={{ fontSize: 14, fontWeight: 400 }}>
+                  · {money(p - c, true)} profit per item
+                </span>
+              </p>
+            </>
+          ) : (
+            <span className="muted small">Enter a price and cost to see the margin.</span>
+          )}
+        </div>
         <div className="row" style={{ justifyContent: 'flex-end' }}>
           <button type="button" className="btn ghost" onClick={close}>
             Cancel
