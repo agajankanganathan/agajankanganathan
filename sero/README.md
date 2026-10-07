@@ -90,6 +90,10 @@ Full source in `prototype/sero-prototype.js`.
 
 The marketing site is in `website/` (see `website/README.md`).
 
+## Portal (web app for clients)
+
+The dashboard café owners sign in to is in `portal/` (see `portal/README.md`).
+
 ## App
 
 The iOS/Android app is in `app/` (see `app/README.md`).

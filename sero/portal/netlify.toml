@@ -1,0 +1,4 @@
+# Netlify: set the base directory to sero/portal.
+[build]
+  command = "npm run build"
+  publish = "dist"
