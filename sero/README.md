@@ -86,6 +86,10 @@ Full source in `prototype/sero-prototype.js`.
   openers and closers.
 - **Dashboard nav order:** Analytics, Insights, Promotions, Loyalty, Menu, Responses.
 
+## Website
+
+The marketing site is in `website/` (see `website/README.md`).
+
 ## Prototype source in `prototype/`
 
 - `sero-section.html`: the case-study markup, including the mobile and desktop interactive prototypes
