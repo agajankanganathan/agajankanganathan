@@ -5,6 +5,8 @@ import { marginBand, marginPct, menuTip, money, parseMoney, weeklyProfit } from 
 import type { MenuItem } from '@core/types';
 
 import { Icon } from '../components/icons';
+import { PriceAlerts } from '../components/PriceAlerts';
+import { RecipeBuilder } from '../components/RecipeBuilder';
 import { InfoTip, PageHead, Segmented, Stat, Switch, useToast } from '../components/ui';
 import { newId } from '../lib/ids';
 import { CATEGORIES, ITEM_CATEGORY, type Category } from '../lib/sample';
@@ -30,13 +32,25 @@ export default function Menu() {
   const [cat, setCat] = useState<'all' | Category>('all');
   const [q, setQ] = useState(params.get('q') ?? '');
   const dialog = useRef<HTMLDialogElement>(null);
+  const recipeFor = params.get('recipe');
+  const openRecipe = (id: string | null) => {
+    const next = new URLSearchParams(params);
+    if (id) next.set('recipe', id);
+    else next.delete('recipe');
+    setParams(next, { replace: true });
+  };
   const tip = menuTip(state.menu);
   const categoryOf = (m: MenuItem): Category => state.categories[m.id] ?? ITEM_CATEGORY[m.id] ?? 'Food';
 
-  // /menu?add=1 opens the add dialog; /menu?q=… pre-fills the search (from ⌘K).
+  // /menu?add=1 opens the add dialog; /menu?q=… pre-fills the search (from ⌘K); /menu?recipe=id opens a recipe.
   useEffect(() => {
     if (params.get('add')) dialog.current?.showModal();
-    if (params.get('add') || params.get('q')) setParams({}, { replace: true });
+    if (params.get('add') || params.get('q')) {
+      const next = new URLSearchParams(params);
+      next.delete('add');
+      next.delete('q');
+      setParams(next, { replace: true });
+    }
   }, [params, setParams]);
 
   const rows = state.menu
@@ -52,7 +66,8 @@ export default function Menu() {
   const revenue = live.reduce((t, m) => t + m.price * m.sold, 0);
   const profit = live.reduce((t, m) => t + weeklyProfit(m), 0);
   const blended = revenue ? (profit / revenue) * 100 : 0;
-  const low = live.filter((m) => marginBand(marginPct(m.price, m.cost)) === 'low');
+  const low = live.filter((m) => marginPct(m.price, m.cost) < state.targetMargin);
+  const costed = state.menu.filter((m) => state.recipes[m.id]).length;
   const best = [...live].sort((a, b) => weeklyProfit(b) - weeklyProfit(a))[0];
 
   const th = (key: SortKey, label: string, right = true) => (
@@ -66,7 +81,29 @@ export default function Menu() {
 
   return (
     <>
-      <PageHead crumb="Run" title="Menu" sub="What sells, what earns, and what to change. Edit a price or cost right in the table and the margin updates.">
+      <PageHead crumb="Run" title="Menu" sub="What sells, what earns, and what to change. Costs come from your recipes, so margins stay up to date when supplier prices change.">
+        <label className="row small" style={{ gap: 8 }}>
+          <span className="muted">
+            Target margin
+            <InfoTip>The margin you aim for. Sero flags items below it and suggests a price that gets you there. Cafés often aim for 65–75%.</InfoTip>
+          </span>
+          <span style={{ position: 'relative' }}>
+            <input
+              className="input num"
+              style={{ width: 76, paddingRight: 26 }}
+              inputMode="numeric"
+              aria-label="Target margin percent"
+              value={state.targetMargin}
+              onChange={(e) => {
+                const v = Math.round(Number(e.target.value));
+                if (!Number.isNaN(v)) dispatch({ type: 'setTargetMargin', pct: Math.min(95, Math.max(0, v)) });
+              }}
+            />
+            <span className="muted" style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)' }}>
+              %
+            </span>
+          </span>
+        </label>
         <button type="button" className="btn" onClick={() => dialog.current?.showModal()}>
           + Add item
         </button>
@@ -80,8 +117,27 @@ export default function Menu() {
           tip="Your blended gross margin, weighted by sales. Cafés typically aim for 65–75% on drinks and 55%+ on food."
         />
         <Stat label="Top earner" value={best?.name ?? '–'} />
-        <Stat label="Needs a look" value={String(low.length)} tip="Items with a margin under 45%. Consider raising the price or reducing the recipe cost." />
+        <Stat
+          label="Below target"
+          value={String(low.length)}
+          tip={`Items under your ${state.targetMargin}% target margin. Open the item’s recipe to see what drives the cost and a suggested price.`}
+        />
       </div>
+
+      <PriceAlerts />
+      {costed < state.menu.length ? (
+        <section className="card row between wrap">
+          <span>
+            <b>
+              {state.menu.length - costed} item{state.menu.length - costed === 1 ? '' : 's'} without a recipe.
+            </b>{' '}
+            <span className="muted">Their cost is typed in by hand, so it won’t update when supplier prices change.</span>
+          </span>
+          <button type="button" className="btn ghost sm" onClick={() => openRecipe(state.menu.find((m) => !state.recipes[m.id])?.id ?? null)}>
+            Build a recipe
+          </button>
+        </section>
+      ) : null}
 
       {tip ? (
         <section className="card ai row" style={{ alignItems: 'flex-start' }}>
@@ -127,7 +183,9 @@ export default function Menu() {
                     <td>
                       <div className="item-cell">
                         <div>
-                          <b>{m.name}</b>
+                          <button type="button" className="link" style={{ color: 'inherit', fontWeight: 600 }} onClick={() => openRecipe(m.id)}>
+                            {m.name}
+                          </button>
                           <small>
                             {categoryOf(m)}
                             {m.available ? '' : ' · sold out'}
@@ -139,7 +197,18 @@ export default function Menu() {
                       <MoneyCell label={`${m.name} price`} value={m.price} onCommit={(price) => dispatch({ type: 'updateItem', id: m.id, price, cost: m.cost })} />
                     </td>
                     <td className="r">
-                      <MoneyCell label={`${m.name} cost`} value={m.cost} onCommit={(cost) => dispatch({ type: 'updateItem', id: m.id, price: m.price, cost })} />
+                      {state.recipes[m.id] ? (
+                        <button type="button" className="cost-btn num" onClick={() => openRecipe(m.id)} aria-label={`${m.name} costs ${money(m.cost, true)}. Open recipe`}>
+                          {money(m.cost, true)} <small>Recipe</small>
+                        </button>
+                      ) : (
+                        <span className="stack" style={{ gap: 2, justifyItems: 'end' }}>
+                          <MoneyCell label={`${m.name} cost`} value={m.cost} onCommit={(cost) => dispatch({ type: 'updateItem', id: m.id, price: m.price, cost })} />
+                          <button type="button" className="link" style={{ fontSize: 12 }} onClick={() => openRecipe(m.id)}>
+                            Build recipe
+                          </button>
+                        </span>
+                      )}
                     </td>
                     <td className="r num">
                       <span
@@ -190,12 +259,12 @@ export default function Menu() {
         </div>
       </section>
       <p className="muted small">
-        Margin = (price − cost to make) ÷ price. <span className="good">65%+ healthy</span> · 45–64% ok · <span className="bad">under 45% worth a look</span>. Press Enter to save
-        an edit, Esc to undo it.
-        <InfoTip>“Cost to make” is ingredients plus packaging for one item. It usually doesn’t include staff time.</InfoTip>
+        Margin = (price − cost to make) ÷ price. Click an item’s name or cost to open its recipe. Press Enter to save a price edit, Esc to undo it.
+        <InfoTip>“Cost to make” is ingredients plus packaging for one serving, worked out from your Ingredients. It doesn’t include staff time.</InfoTip>
       </p>
 
-      <AddItem dialog={dialog} />
+      <AddItem dialog={dialog} onBuild={openRecipe} />
+      {recipeFor ? <RecipeBuilder key={recipeFor} itemId={recipeFor} onClose={() => openRecipe(null)} /> : null}
     </>
   );
 }
@@ -234,7 +303,7 @@ function MoneyCell({ value, onCommit, label }: { value: number; onCommit: (v: nu
   );
 }
 
-function AddItem({ dialog }: { dialog: RefObject<HTMLDialogElement | null> }) {
+function AddItem({ dialog, onBuild }: { dialog: RefObject<HTMLDialogElement | null>; onBuild: (id: string) => void }) {
   const { dispatch } = useStore();
   const say = useToast();
   const [name, setName] = useState('');
@@ -242,7 +311,7 @@ function AddItem({ dialog }: { dialog: RefObject<HTMLDialogElement | null> }) {
   const [price, setPrice] = useState('');
   const [cost, setCost] = useState('');
   const p = parseMoney(price);
-  const c = parseMoney(cost);
+  const c = cost.trim() === '' ? 0 : parseMoney(cost);
   const valid = name.trim() !== '' && p > 0 && c >= 0;
 
   const close = () => {
@@ -252,16 +321,19 @@ function AddItem({ dialog }: { dialog: RefObject<HTMLDialogElement | null> }) {
     setCost('');
   };
 
-  const submit = (e: FormEvent) => {
+  const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!valid) return;
+    const id = newId('item');
+    const build = (e.nativeEvent as SubmitEvent).submitter?.getAttribute('value') === 'build';
     dispatch({
       type: 'addItem',
-      item: { id: newId('item'), name: name.trim(), price: p, cost: c, sold: 0, trend: 0, available: true },
+      item: { id, name: name.trim(), price: p, cost: c, sold: 0, trend: 0, available: true },
       category,
     });
     say(`${name.trim()} added to the menu`);
     close();
+    if (build) onBuild(id);
   };
 
   return (
@@ -293,7 +365,7 @@ function AddItem({ dialog }: { dialog: RefObject<HTMLDialogElement | null> }) {
           </label>
           <label className="field">
             <span>
-              Cost to make <span className="hint">ingredients + packaging</span>
+              Cost to make <span className="hint">optional if you build a recipe</span>
             </span>
             <span className="money">
               <input className="input" inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value)} placeholder="0.00" />
@@ -301,7 +373,7 @@ function AddItem({ dialog }: { dialog: RefObject<HTMLDialogElement | null> }) {
           </label>
         </div>
         <div className="card ai" style={{ padding: 14 }} aria-live="polite">
-          {p > 0 && c >= 0 ? (
+          {p > 0 && c > 0 ? (
             <>
               <span className="muted small">Margin</span>
               <p style={{ fontSize: 24, fontWeight: 600 }} className={marginBand(marginPct(p, c)) === 'low' ? 'bad' : 'good'}>
@@ -312,15 +384,18 @@ function AddItem({ dialog }: { dialog: RefObject<HTMLDialogElement | null> }) {
               </p>
             </>
           ) : (
-            <span className="muted small">Enter a price and cost to see the margin.</span>
+            <span className="muted small">Know the cost? Type it in. Otherwise click “Add & build recipe” and Sero works it out from your ingredients.</span>
           )}
         </div>
         <div className="row" style={{ justifyContent: 'flex-end' }}>
           <button type="button" className="btn ghost" onClick={close}>
             Cancel
           </button>
-          <button type="submit" className="btn" disabled={!valid}>
+          <button type="submit" className="btn ghost" value="add" disabled={!valid}>
             Add item
+          </button>
+          <button type="submit" className="btn" value="build" disabled={!valid}>
+            Add & build recipe →
           </button>
         </div>
       </form>

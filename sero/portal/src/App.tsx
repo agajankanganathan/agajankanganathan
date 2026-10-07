@@ -3,6 +3,7 @@ import { BrowserRouter, Link, Route, Routes } from 'react-router';
 import { Shell } from './components/Shell';
 import { ToastProvider } from './components/ui';
 import Help from './pages/Help';
+import Ingredients from './pages/Ingredients';
 import Insights from './pages/Insights';
 import Login from './pages/Login';
 import Loyalty from './pages/Loyalty';
@@ -26,6 +27,7 @@ export default function App() {
               <Route path="promotions" element={<Promotions />} />
               <Route path="loyalty" element={<Loyalty />} />
               <Route path="menu" element={<Menu />} />
+              <Route path="ingredients" element={<Ingredients />} />
               <Route path="reviews" element={<Reviews />} />
               <Route path="settings" element={<Settings />} />
               <Route path="help" element={<Help />} />

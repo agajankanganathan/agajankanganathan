@@ -31,7 +31,8 @@ On the sign-in screen, click **Explore the demo café**, or type any email and p
 | **Customer insights** | Reasons customers leave, ranked; for each: mentions per week, guest quotes, data sources and a suggested fix; customer journey |
 | **Promotions** | Running/paused filters; create targeted promotions with a live weekly-lift estimate; pause or delete |
 | **Loyalty & members** | Searchable member list with at-risk and regulars filters; member profile with habits, stamp card and Send reward |
-| **Menu** | Edit price and cost inline (margin recalculates); categories, search, sorting, totals; sold-out switch; add items |
+| **Menu** | Costs come from recipes; click an item to open its recipe builder (templates, batch recipes, live margin and suggested price); target margin; categories, search, sorting, totals; sold-out switch; add items |
+| **Ingredients & costs** | Enter ingredients as bought in bulk (e.g. 12 × 1 L for $43.20) plus waste %; real cost per kg / L / each; edit pack prices inline; supplier price-rise alerts with one-click suggested prices; invoice scan (demo) |
 | **Reviews** | Rating and response-rate stats; filter by status and source; reply composer with tone choice, regenerate and post |
 | **Help & guides** | Tour, how-to guides, FAQ, shortcuts, glossary |
 | **Settings** | Café details, theme, team, connected sources, plan & billing (Starter $49 / Growth $129 / Multi-location $99 per location), reset demo data |
@@ -46,6 +47,8 @@ Everything you change is saved in your browser (localStorage), so a demo survive
 - `src/pages/`: one file per page.
 - `src/components/`: app shell (sidebar), the revenue chart, and small UI pieces.
 - `src/state/store.tsx`: all app state, saved to localStorage.
+- `src/lib/costing.ts`: recipe costing (unit conversion, waste, batch recipes, suggested prices).
+- `src/lib/ingredients.ts`: sample ingredients, recipes, starter templates and the sample invoice.
 - `src/lib/promos.ts`: audiences and the promotion lift estimate.
 - `src/lib/sample.ts`: portal-only sample data (members, extra reviews, insight evidence, plans).
 - `src/components/Tour.tsx`: the guided tour steps; edit `TOUR_STEPS` to change the wording.

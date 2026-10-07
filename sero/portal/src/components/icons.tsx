@@ -45,6 +45,21 @@ const PATHS = {
     </>
   ),
   logout: <path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10" />,
+  box: (
+    <>
+      <path d="M3 7.5L12 3l9 4.5v9L12 21l-9-4.5z" />
+      <path d="M3 7.5L12 12l9-4.5M12 12v9" />
+    </>
+  ),
+  camera: (
+    <>
+      <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+      <circle cx="12" cy="13" r="3.5" />
+    </>
+  ),
+  alert: <path d="M12 4l9 16H3zM12 10v4M12 17.5v.01" />,
+  plus: <path d="M12 5v14M5 12h14" />,
+  trash: <path d="M5 7h14M10 7V4h4v3M6 7l1 13h10l1-13" />,
   card: (
     <>
       <rect x="3" y="5" width="18" height="14" rx="2" />

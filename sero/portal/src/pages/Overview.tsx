@@ -24,11 +24,11 @@ const TRENDS: Record<string, number[]> = {
   'Revenue at risk': [1620, 1580, 1490, 1450, 1400, 1310, 1260, 1150],
 };
 
-const KIND_ICON: Record<string, IconName> = { promo: 'promos', reward: 'gift', reply: 'reviews', menu: 'menu', settings: 'settings' };
+const KIND_ICON: Record<string, IconName> = { promo: 'promos', reward: 'gift', reply: 'reviews', menu: 'menu', settings: 'settings', cost: 'box' };
 
 export default function Overview() {
   const { state, dispatch } = useStore();
-  const { atRisk, toAnswer, promosRunning } = useAttention();
+  const { atRisk, toAnswer, promosRunning, priceAlerts } = useAttention();
   const R = RANGES[state.range];
   const top = DRIVERS[0];
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
@@ -43,7 +43,8 @@ export default function Overview() {
     { done: state.visited.includes('/insights'), title: 'See why customers leave', sub: 'Open Customer insights and check the top reason.', to: '/insights' },
     { done: Object.keys(state.replies).length > 0, title: 'Reply to a review', sub: 'Pick a tone, tweak the draft and post it.', to: '/reviews?filter=open' },
     { done: kinds.has('promo'), title: 'Launch a promotion', sub: 'Target guests who haven’t visited in 30+ days.', to: '/promotions?new=1' },
-    { done: kinds.has('menu'), title: 'Check your menu margins', sub: 'Update a price or cost and watch the margin change.', to: '/menu' },
+    { done: kinds.has('menu'), title: 'Check your menu margins', sub: 'Open an item’s recipe or change a price and watch the margin update.', to: '/menu' },
+    { done: kinds.has('cost'), title: 'Update an ingredient price', sub: 'Change a supplier price, or scan an invoice, and see every margin follow.', to: '/ingredients' },
     { done: state.rewardsSent.length > 0, title: 'Win back a regular', sub: 'Send a free drink to someone drifting away.', to: '/loyalty?filter=risk' },
     { done: kinds.has('settings'), title: 'Add your café details', sub: 'Your name and address appear across Sero.', to: '/settings' },
   ];
@@ -91,9 +92,12 @@ export default function Overview() {
         <section className="card" data-tour="attention">
           <div className="card-head">
             <h2>Needs your attention</h2>
-            <span className="pill neutral">{toAnswer + atRisk} to do</span>
+            <span className="pill neutral">{toAnswer + atRisk + priceAlerts} to do</span>
           </div>
           <div className="list">
+            {priceAlerts ? (
+              <Attn to="/ingredients" icon="alert" tone="bad" title="Supplier prices went up" sub="Some items may be below your target margin" value={priceAlerts} />
+            ) : null}
             <Attn to="/reviews?filter=open" icon="reviews" tone={toAnswer ? 'bad' : 'good'} title="Reviews waiting for a reply" sub="Reply within a day to protect your rating" value={toAnswer} />
             <Attn to="/loyalty?filter=risk" icon="gift" tone={atRisk ? 'bad' : 'good'} title="Regulars at risk of leaving" sub="Visiting much less than usual" value={atRisk} />
             <Attn to="/promotions" icon="promos" title="Promotions running" sub={`Projected +${money(projectedLift(state.promos))} this week`} value={promosRunning} />

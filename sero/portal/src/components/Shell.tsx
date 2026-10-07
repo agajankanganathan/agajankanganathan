@@ -11,7 +11,7 @@ const TRIAL_LEFT = 11;
 
 export function Shell() {
   const { state, dispatch } = useStore();
-  const { atRisk, toAnswer } = useAttention();
+  const { atRisk, toAnswer, priceAlerts } = useAttention();
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [palette, setPalette] = useState(false);
@@ -67,12 +67,16 @@ export function Shell() {
       label: 'Run',
       links: [
         { to: '/menu', label: 'Menu', icon: 'menu' },
+        { to: '/ingredients', label: 'Ingredients & costs', icon: 'box', badge: priceAlerts },
         { to: '/reviews', label: 'Reviews', icon: 'reviews', badge: toAnswer },
       ],
     },
   ];
 
   const notifications: { to: string; icon: IconName; title: string; sub: string }[] = [
+    ...(priceAlerts
+      ? [{ to: '/ingredients', icon: 'alert' as const, title: `${priceAlerts} supplier price increase${priceAlerts === 1 ? '' : 's'}`, sub: 'Check which items dropped below your target margin' }]
+      : []),
     ...(toAnswer ? [{ to: '/reviews?filter=open', icon: 'reviews' as const, title: `${toAnswer} reviews need a reply`, sub: 'Replying within a day keeps your rating up' }] : []),
     ...(atRisk ? [{ to: '/loyalty?filter=risk', icon: 'gift' as const, title: `${atRisk} regulars are drifting away`, sub: 'A free drink often brings them back' }] : []),
     { to: '/insights', icon: 'insights', title: 'Morning waits are up 20% this week', sub: 'Top reason guests don’t come back' },

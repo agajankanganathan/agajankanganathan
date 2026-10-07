@@ -12,7 +12,7 @@
     <script>
       // Apply the saved theme before first paint to avoid a flash.
       try {
-        var t = JSON.parse(localStorage.getItem('sero-portal-v2') || '{}').theme;
+        var t = JSON.parse(localStorage.getItem('sero-portal-v3') || '{}').theme;
         if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
       } catch (e) {}
     </script>

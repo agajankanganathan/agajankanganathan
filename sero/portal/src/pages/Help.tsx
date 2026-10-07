@@ -59,6 +59,28 @@ const GUIDES: { icon: IconName; title: string; to: string; steps: string[] }[] =
     ],
   },
   {
+    icon: 'box',
+    title: 'Cost a recipe from bulk buys',
+    to: '/ingredients',
+    steps: [
+      'Open Ingredients & costs and click + Add ingredient.',
+      'Type it as you buy it: e.g. 12 × 1 L oat milk for $43.20, plus any waste %.',
+      'On the Menu, click an item’s cost (or Build recipe) and pick a starter template.',
+      'Adjust the amounts (18 g beans, 220 ml milk…) and click Save recipe.',
+    ],
+  },
+  {
+    icon: 'camera',
+    title: 'Update prices from an invoice',
+    to: '/ingredients?scan=1',
+    steps: [
+      'Click Scan an invoice and take a photo of the delivery invoice.',
+      'Check the matched lines and the old → new prices.',
+      'Click Update. Every recipe and margin recalculates.',
+      'If anything drops below your target, Sero suggests a new price.',
+    ],
+  },
+  {
     icon: 'reviews',
     title: 'Reply to reviews',
     to: '/reviews?filter=open',
@@ -76,6 +98,8 @@ const FAQ = [
   ['Does Sero post replies automatically?', 'No. Sero drafts every reply, and you decide whether to edit, regenerate or post it.'],
   ['How is “revenue at risk” calculated?', 'It’s the usual monthly spend of regulars who are visiting much less than normal. If they stopped coming entirely, that’s what you’d lose.'],
   ['How accurate is the promotion estimate?', 'It’s an estimate based on how many guests an offer reaches, how often similar guests come back, your average spend and the discount. It gets sharper as Sero learns from your own promotions.'],
+  ['My supplier sells in bulk. How do I enter that?', 'Enter exactly what’s on the invoice: how many units in the case, the size of each, and the case price (e.g. 12 × 1 L for $43.20). Sero converts it to a cost per ml, gram or piece, so recipes can use any amount.'],
+  ['What about recipes that make several servings?', 'Set “Servings from this recipe” in the recipe builder. A banana bread loaf cut into 8 slices costs ⅛ of its ingredients per slice.'],
   ['Can my staff use Sero?', 'Yes. Growth includes 3 logins and Multi-location includes unlimited logins with roles. See Settings → Plan & billing.'],
   ['How do I undo my changes in this demo?', 'Go to Settings and click Reset demo data. Everything goes back to the starting sample data.'],
 ];
@@ -86,6 +110,10 @@ const GLOSSARY = [
   ['Lost visit', 'A visit a regular would normally have made but didn’t.'],
   ['Margin', '(Price − cost to make) ÷ price. How much of each sale you keep before staff and rent.'],
   ['Cost to make', 'Ingredients plus packaging for one item.'],
+  ['Pack price', 'What you pay for the whole case, bag or box on the supplier invoice.'],
+  ['Waste', 'Share of an ingredient lost before serving (steaming, trimming, spills). It raises the real cost.'],
+  ['Recipe', 'The ingredients and amounts in one serving (or one batch, split into servings).'],
+  ['Target margin', 'The margin you aim for. Sero flags items below it and suggests prices.'],
   ['Projected lift', 'Extra revenue per week Sero expects from a promotion.'],
   ['At risk', 'A member away more than twice their usual gap between visits (and at least 2 weeks).'],
 ];

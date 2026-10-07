@@ -23,10 +23,13 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       { group: 'Pages', label: 'Loyalty & members', icon: 'loyalty', run: go('/loyalty') },
       { group: 'Pages', label: 'Menu', icon: 'menu', run: go('/menu') },
       { group: 'Pages', label: 'Reviews', icon: 'reviews', run: go('/reviews') },
+      { group: 'Pages', label: 'Ingredients & costs', icon: 'box', run: go('/ingredients') },
       { group: 'Pages', label: 'Help & guides', icon: 'help', run: go('/help') },
       { group: 'Pages', label: 'Settings', icon: 'settings', run: go('/settings') },
       { group: 'Actions', label: 'Create a promotion', icon: 'promos', run: go('/promotions?new=1') },
       { group: 'Actions', label: 'Add a menu item', icon: 'menu', run: go('/menu?add=1') },
+      { group: 'Actions', label: 'Scan a supplier invoice', icon: 'camera', run: go('/ingredients?scan=1') },
+      { group: 'Actions', label: 'Add an ingredient', icon: 'box', run: go('/ingredients?add=1') },
       { group: 'Actions', label: 'Reply to reviews', icon: 'reviews', run: go('/reviews?filter=open') },
       { group: 'Actions', label: 'See regulars at risk', icon: 'gift', run: go('/loyalty?filter=risk') },
       { group: 'Actions', label: 'Replay the product tour', icon: 'play', run: () => dispatch({ type: 'restartTour' }) },
@@ -39,11 +42,12 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
           dispatch({ type: 'setTheme', theme: dark ? 'light' : 'dark' });
         },
       },
-      ...state.menu.map<Cmd>((m) => ({ group: 'Menu items', label: m.name, hint: `$${m.price.toFixed(2)}`, icon: 'menu', run: go(`/menu?q=${encodeURIComponent(m.name)}`) })),
+      ...state.menu.map<Cmd>((m) => ({ group: 'Menu items', label: m.name, hint: `$${m.price.toFixed(2)} · open recipe`, icon: 'menu', run: go(`/menu?recipe=${m.id}`) })),
+      ...state.ingredients.map<Cmd>((i) => ({ group: 'Ingredients', label: i.name, hint: i.supplier, icon: 'box', run: go('/ingredients') })),
       ...MEMBERS.map<Cmd>((m) => ({ group: 'Members', label: m.name, hint: m.favourite, icon: 'user', run: go(`/loyalty?member=${m.id}`) })),
       ...REVIEWS.map<Cmd>((r) => ({ group: 'Reviews', label: `${r.author} · ${r.stars}★`, hint: r.source, icon: 'reviews', run: go(`/reviews?id=${r.id}`) })),
     ];
-  }, [state.menu, navigate, dispatch]);
+  }, [state.menu, state.ingredients, navigate, dispatch]);
 
   const results = useMemo(() => {
     const t = q.trim().toLowerCase();
