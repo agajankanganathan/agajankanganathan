@@ -90,6 +90,10 @@ Full source in `prototype/sero-prototype.js`.
 
 The marketing site is in `website/` (see `website/README.md`).
 
+## App
+
+The iOS/Android app is in `app/` (see `app/README.md`).
+
 ## Prototype source in `prototype/`
 
 - `sero-section.html`: the case-study markup, including the mobile and desktop interactive prototypes
