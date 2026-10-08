@@ -1,0 +1,8 @@
+# Deploy with base directory "sero/website" (or drag this folder into Netlify).
+[build]
+  publish = "."
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
